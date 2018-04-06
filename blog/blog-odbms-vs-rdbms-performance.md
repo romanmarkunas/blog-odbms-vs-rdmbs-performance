@@ -39,6 +39,11 @@ more fit to model data that you would express in a block diagram style
 to analyze. It's easy to develop with changing schema and naturally
 expresses complex relations (no joins).
 
+## Some notes on installation
+
+gradle install task to install db's
+not that objectdb is hosted on separate repo and does not include javax.persistence
+
 ## Test fixtures
 
 TODO - actually implement all that below
