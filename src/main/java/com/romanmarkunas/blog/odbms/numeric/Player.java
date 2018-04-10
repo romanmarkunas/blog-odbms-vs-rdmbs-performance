@@ -1,32 +1,39 @@
 package com.romanmarkunas.blog.odbms.numeric;
 
-public class StatisticsEntry {
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 
+@Entity
+public class Player {
+
+    @Id
+//    @GeneratedValue() TODO think about generators
     private final String accountId;
     private int gamesPlayed;
     private int gamesWon;
 
 
-    public StatisticsEntry(String accountId) {
+    public Player(String accountId) {
         this(accountId, 0, 0);
     }
 
-    public StatisticsEntry(String accountId, int gamesPlayed, int gamesWon) {
+    public Player(String accountId, int gamesPlayed, int gamesWon) {
         this.accountId = accountId;
         this.gamesPlayed = gamesPlayed;
         this.gamesWon = gamesWon;
     }
 
 
-    public String getAccountId() {
+    public String accountId() {
         return this.accountId;
     }
 
-    public int getGamesPlayed() {
+    public int gamesPlayed() {
         return this.gamesPlayed;
     }
 
-    public int getGamesWon() {
+    public int gamesWon() {
         return this.gamesWon;
     }
 
