@@ -38,7 +38,7 @@ public class PlayerJPADAO implements PlayerDAO {
     @SuppressWarnings("unchecked")
     public List<Player> topTen() {
         return this.manager
-                .createQuery("SELECT p from Player p ORDER BY p.gamesWon / p.gamesPlayed")
+                .createQuery("SELECT p from Player p ORDER BY (100.0 * p.gamesWon) / p.gamesPlayed")
                 .setMaxResults(10)
                 .getResultList();
     }
