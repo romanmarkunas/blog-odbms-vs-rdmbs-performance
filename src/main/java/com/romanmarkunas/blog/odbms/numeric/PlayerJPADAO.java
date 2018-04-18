@@ -2,6 +2,7 @@ package com.romanmarkunas.blog.odbms.numeric;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -25,7 +26,7 @@ public class PlayerJPADAO implements PlayerDAO {
             this.manager.getTransaction().commit();
         }
         catch (PersistenceException e) {
-            throwAccessExc("create", entry.accountId(), e);
+            throw accessExc("create", entry.accountId(), e);
         }
     }
 
@@ -36,7 +37,7 @@ public class PlayerJPADAO implements PlayerDAO {
             return this.manager.find(Player.class, accountId);
         }
         catch (PersistenceException e) {
-            throwAccessExc("find", accountId, e);
+            throw accessExc("find", accountId, e);
         }
     }
 
@@ -48,7 +49,7 @@ public class PlayerJPADAO implements PlayerDAO {
             this.manager.getTransaction().commit();
         }
         catch (PersistenceException e) {
-            throwAccessExc("create", entry.accountId(), e);
+            throw accessExc("create", entry.accountId(), e);
         }
     }
 
@@ -66,11 +67,8 @@ public class PlayerJPADAO implements PlayerDAO {
         }
     }
 
-
-    private void throwAccessExc(
-            String operation,
-            String id,
-            Exception cause) throws DBAccessException {
-        throw new DBAccessException("Cannot " + operation + " Player [" + id + "]", cause);
+    @Override
+    public void close() throws IOException {
+        this.manager.close();
     }
 }

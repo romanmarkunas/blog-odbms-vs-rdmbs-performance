@@ -1,8 +1,9 @@
 package com.romanmarkunas.blog.odbms.numeric;
 
+import java.io.Closeable;
 import java.util.List;
 
-public interface PlayerDAO {
+public interface PlayerDAO extends Closeable {
 
     void create(Player entry) throws DBAccessException;
 
@@ -11,4 +12,11 @@ public interface PlayerDAO {
     void update(Player entry) throws DBAccessException;
 
     List<Player> topTen() throws DBAccessException;
+
+    default DBAccessException accessExc(
+            String operation,
+            String id,
+            Exception cause) {
+        return new DBAccessException("Cannot " + operation + " Player [" + id + "]", cause);
+    }
 }
