@@ -6,9 +6,11 @@ import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class NumbersTest {
 
@@ -31,23 +33,38 @@ public class NumbersTest {
     @Test
     public void rdbms() throws Exception {
         this.dao = new PlayerPostresqlDAO(connection());
-        this.dao.create(new Player("123"));
-        Statement getAll = connection().createStatement();
-        ResultSet res = getAll.executeQuery("SELECT * FROM numbers");
-        while (res.next()) {
-            System.out.println("Fetched player with id: " + res.getString(1));
-        }
-        System.out.println("Done!");
-    }
 
+        create10kEntries();
+
+        System.out.println("Starting timed insertions");
+        List<Long> results = new ArrayList<>(10);
+
+        for (int i = 0; i < 10; i++) {
+            long start = System.currentTimeMillis();
+            create10kEntries();
+            long duration = System.currentTimeMillis() - start;
+            results.add(duration);
+            System.out.println(String.format("Completed batch %s withing %s", i, duration));
+        }
+
+        long average = results.stream().reduce(Long::sum).get() / 10;
+        System.out.println("Completed timed insertions! Average time: " + average);
+    }
 
     @After
     public void tearDown() throws Exception {
-        this.dao.close();
+        if (this.dao != null) {
+            this.dao.close();
+        }
+
         try (Connection connection = connection();
              Statement dropTable = connection.createStatement()) {
             dropTable.execute("DROP TABLE numbers");
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        new NumbersTest().tearDown();
     }
 
 
@@ -57,5 +74,17 @@ public class NumbersTest {
                 "jdbc:postgresql://localhost:5432/numbers",
                 "testuser",
                 "secret");
+    }
+
+    private void create10kEntries() throws DBAccessException {
+        Random rn = new Random();
+        String prefix = String.valueOf(rn.nextInt(1000)) + String.valueOf(rn.nextInt(1000));
+        for (int i = 0; i < 10_000; i++) {
+            Player randomPlayer = new Player(
+                    prefix + String.valueOf(i),
+                    rn.nextInt(100),
+                    rn.nextInt(90));
+            this.dao.create(randomPlayer);
+        }
     }
 }

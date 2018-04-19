@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -18,14 +19,12 @@ public class PlayerPostresqlDAO implements PlayerDAO {
 
     public PlayerPostresqlDAO(Connection connection) {
         this.connection = connection;
-
     }
 
 
     @Override
     public void create(Player entry) throws DBAccessException {
         try {
-            // TODO - test without prepared statement
             lazyInitInsert();
             this.insert.setString(1, entry.accountId());
             this.insert.setInt(2, entry.gamesPlayed());
