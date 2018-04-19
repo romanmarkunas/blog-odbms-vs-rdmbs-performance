@@ -2,12 +2,13 @@ package com.romanmarkunas.blog.odbms.numeric;
 
 import java.io.Closeable;
 import java.util.List;
+import java.util.Optional;
 
 public interface PlayerDAO extends Closeable {
 
     void create(Player entry) throws DBAccessException;
 
-    Player get(String accountId) throws DBAccessException;
+    Optional<Player> get(String accountId) throws DBAccessException;
 
     void update(Player entry) throws DBAccessException;
 

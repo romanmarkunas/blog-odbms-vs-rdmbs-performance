@@ -4,6 +4,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Romans Markuns
@@ -31,10 +32,10 @@ public class PlayerJPADAO implements PlayerDAO {
     }
 
     @Override
-    public Player get(String accountId) throws DBAccessException {
+    public Optional<Player> get(String accountId) throws DBAccessException {
         try {
             // TODO test how concurrent updates may screw this
-            return this.manager.find(Player.class, accountId);
+            return Optional.ofNullable(this.manager.find(Player.class, accountId));
         }
         catch (PersistenceException e) {
             throw accessExc("find", accountId, e);

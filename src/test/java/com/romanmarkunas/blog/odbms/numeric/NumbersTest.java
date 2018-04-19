@@ -38,17 +38,36 @@ public class NumbersTest {
 
         System.out.println("Starting timed insertions");
         List<Long> results = new ArrayList<>(10);
+        List<String> accountsToQuery = new ArrayList<>(10);
 
         for (int i = 0; i < 10; i++) {
             long start = System.currentTimeMillis();
-            create10kEntries();
+            String lastId = create10kEntries();
             long duration = System.currentTimeMillis() - start;
             results.add(duration);
+            accountsToQuery.add(lastId);
             System.out.println(String.format("Completed batch %s withing %s", i, duration));
         }
 
         long average = results.stream().reduce(Long::sum).get() / 10;
         System.out.println("Completed timed insertions! Average time: " + average);
+
+        results.clear();
+
+        System.out.println("Starting timed retrievals");
+
+        for (int i = 0; i < 10; i++) {
+            long start = System.currentTimeMillis();
+            for (String account : accountsToQuery) {
+                this.dao.get(account);
+            }
+            long duration = System.currentTimeMillis() - start;
+            results.add(duration);
+            System.out.println(String.format("Completed retireve batch %s withing %s", i, duration));
+        }
+
+        average = results.stream().reduce(Long::sum).get() / 10;
+        System.out.println("Completed timed retrievals! Average time: " + average);
     }
 
     @After
@@ -76,7 +95,7 @@ public class NumbersTest {
                 "secret");
     }
 
-    private void create10kEntries() throws DBAccessException {
+    private String create10kEntries() throws DBAccessException {
         Random rn = new Random();
         String prefix = String.valueOf(rn.nextInt(1000)) + String.valueOf(rn.nextInt(1000));
         for (int i = 0; i < 10_000; i++) {
@@ -86,5 +105,6 @@ public class NumbersTest {
                     rn.nextInt(90));
             this.dao.create(randomPlayer);
         }
+        return prefix + "9999";
     }
 }

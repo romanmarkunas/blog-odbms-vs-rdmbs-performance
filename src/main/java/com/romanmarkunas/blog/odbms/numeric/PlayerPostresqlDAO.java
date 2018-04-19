@@ -3,9 +3,10 @@ package com.romanmarkunas.blog.odbms.numeric;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Romans Markuns
@@ -15,6 +16,7 @@ public class PlayerPostresqlDAO implements PlayerDAO {
     private final Connection connection;
 
     private PreparedStatement insert;
+    private PreparedStatement select;
 
 
     public PlayerPostresqlDAO(Connection connection) {
@@ -37,8 +39,24 @@ public class PlayerPostresqlDAO implements PlayerDAO {
     }
 
     @Override
-    public Player get(String accountId) {
-        return null;
+    public Optional<Player> get(String accountId) throws DBAccessException {
+        try {
+            lazyInitSelect();
+            this.select.setString(1, accountId);
+            ResultSet rs = this.select.executeQuery();
+            if (rs.next()) {
+                return Optional.of(new Player(
+                        rs.getString("accountId"),
+                        rs.getInt("gamesPlayed"),
+                        rs.getInt("gamesWon")));
+            }
+            else {
+                return Optional.empty();
+            }
+        }
+        catch (SQLException e) {
+            throw accessExc("retrieve", accountId, e);
+        }
     }
 
     @Override
@@ -56,6 +74,7 @@ public class PlayerPostresqlDAO implements PlayerDAO {
     public void close() throws IOException {
         try {
             closeIfInit(this.insert);
+            closeIfInit(this.select);
             this.connection.close();
         }
         catch (SQLException e) {
@@ -71,6 +90,13 @@ public class PlayerPostresqlDAO implements PlayerDAO {
                     "(accountId, gamesPlayed, gamesWon) " +
                     "VALUES " +
                     "(?, ?, ?)");
+        }
+    }
+
+    private void lazyInitSelect() throws SQLException {
+        if (this.select == null) {
+            this.select = this.connection.prepareStatement(
+                    "SELECT * FROM numbers WHERE accountId = ?");
         }
     }
 
