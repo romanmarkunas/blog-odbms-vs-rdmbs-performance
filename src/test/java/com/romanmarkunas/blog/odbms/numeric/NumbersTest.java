@@ -1,5 +1,6 @@
 package com.romanmarkunas.blog.odbms.numeric;
 
+import com.romanmarkunas.blog.odbms.common.ThrowingRunnable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,33 +42,33 @@ public class NumbersTest {
         List<String> accountsToQuery = new ArrayList<>(10);
 
         for (int i = 0; i < 10; i++) {
-            long start = System.currentTimeMillis();
-            String lastId = create10kEntries();
-            long duration = System.currentTimeMillis() - start;
-            results.add(duration);
-            accountsToQuery.add(lastId);
-            System.out.println(String.format("Completed batch %s withing %s", i, duration));
+            runMetered(
+                    () -> {
+                        String lastId = create10kEntries();
+                        accountsToQuery.add(lastId);
+                    },
+                    results,
+                    "insertion batch " + i);
         }
 
-        long average = results.stream().reduce(Long::sum).get() / 10;
-        System.out.println("Completed timed insertions! Average time: " + average);
+        System.out.println("Completed timed insertions! Average time, ms: " + average(results));
 
         results.clear();
 
         System.out.println("Starting timed retrievals");
 
         for (int i = 0; i < 10; i++) {
-            long start = System.currentTimeMillis();
-            for (String account : accountsToQuery) {
-                this.dao.get(account);
-            }
-            long duration = System.currentTimeMillis() - start;
-            results.add(duration);
-            System.out.println(String.format("Completed retireve batch %s withing %s", i, duration));
+            runMetered(
+                    () -> {
+                        for (String account : accountsToQuery) {
+                            this.dao.get(account);
+                        }
+                    },
+                    results,
+                    "retireval batch " + i);
         }
 
-        average = results.stream().reduce(Long::sum).get() / 10;
-        System.out.println("Completed timed retrievals! Average time: " + average);
+        System.out.println("Completed timed retrievals! Average time, ns: " + average(results));
     }
 
     @After
@@ -106,5 +107,34 @@ public class NumbersTest {
             this.dao.create(randomPlayer);
         }
         return prefix + "9999";
+    }
+
+    private long average(List<Long> measurements) {
+        int size = measurements.size();
+        if (size == 0) {
+            return 0;
+        }
+        else {
+            return measurements
+                    .stream()
+                    .reduce(Long::sum)
+                    .orElse(0L)
+                    / size;
+        }
+    }
+
+    private void runMetered(
+            ThrowingRunnable code,
+            List<Long> measurements,
+            String description) throws Exception {
+        long start = System.nanoTime();
+        code.run();
+        long duration = System.nanoTime() - start;
+        measurements.add(duration);
+        System.out.println(String.format(
+                "Completed %s within %s ms (%s ns)",
+                description,
+                duration / 1_000_000,
+                duration));
     }
 }
