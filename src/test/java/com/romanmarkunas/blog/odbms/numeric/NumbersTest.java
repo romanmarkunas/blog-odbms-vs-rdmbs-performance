@@ -1,5 +1,6 @@
 package com.romanmarkunas.blog.odbms.numeric;
 
+import com.objectdb.jpa.EMF;
 import com.romanmarkunas.blog.odbms.common.ThrowingRunnable;
 import org.junit.After;
 import org.junit.Before;
@@ -33,7 +34,8 @@ public class NumbersTest {
 
     @Test
     public void rdbms() throws Exception {
-        this.dao = new PlayerPostresqlDAO(connection());
+//        this.dao = new PlayerPostresqlDAO(connection());
+        this.dao = new PlayerJPADAO(new EMF().createEntityManager());
 
         create10kEntries();
 
@@ -65,7 +67,7 @@ public class NumbersTest {
                         }
                     },
                     results,
-                    "retireval batch " + i);
+                    "retrieval batch " + i);
         }
 
         System.out.println("Completed timed retrievals! Average time, ns: " + average(results));
